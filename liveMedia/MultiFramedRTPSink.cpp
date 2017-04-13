@@ -400,6 +400,7 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
     // We're done:
     onSourceClosure();
   } else {
+#ifndef __arm__   //原有方法是重新计算一个Task时间，让live555下一次循环再将未发送完的包继续发送完成
     // We have more frames left to send.  Figure out when the next frame
     // is due to start playing, then make sure that we wait this long before
     // sending the next packet.
@@ -413,6 +414,9 @@ void MultiFramedRTPSink::sendPacketIfNecessary() {
 
     // Delay this amount of time:
     nextTask() = envir().taskScheduler().scheduleDelayedTask(uSecondsToGo, (TaskFunc*)sendNext, this);
+#else   //现有方法是不经过循环，直接将未发送的包全部发完再进行live555的eventLoop循环
+    sendNext(this);
+#endif
   }
 }
 
